@@ -38,6 +38,10 @@ namespace VehicleQuotes.Api.Migrations
                     b.HasKey("ID")
                         .HasName("pk_body_types");
 
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("ix_body_types_name");
+
                     b.ToTable("body_types", (string)null);
                 });
 
@@ -58,6 +62,10 @@ namespace VehicleQuotes.Api.Migrations
                     b.HasKey("ID")
                         .HasName("pk_makes");
 
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("ix_makes_name");
+
                     b.ToTable("makes", (string)null);
                 });
 
@@ -77,6 +85,10 @@ namespace VehicleQuotes.Api.Migrations
 
                     b.HasKey("ID")
                         .HasName("pk_sizes");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("ix_sizes_name");
 
                     b.ToTable("sizes", (string)null);
                 });
