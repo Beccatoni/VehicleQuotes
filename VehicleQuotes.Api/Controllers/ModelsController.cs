@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VehicleQuotes.Api.Data;
 using VehicleQuotes.Api.Models;
+using VehicleQuotes.Api.ResourceModels;
 
 namespace VehicleQuotes.Api.Controllers
 {
@@ -23,11 +19,30 @@ namespace VehicleQuotes.Api.Controllers
 
         // GET: api/Models
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Model>>> GetModels([FromRoute]int makeId)
+        public async Task<ActionResult<IEnumerable<ModelSpecification>>> GetModels([FromRoute] int makeId)
         {
+            // Look for the make identified by 'makeId'
             var make = await _context.Makes.FindAsync(makeId);
+
+            //If we can't find the make, we return a 404
             if (make == null) return NotFound();
-            return await _context.Models.Where(m => m.MakeID == makeId).ToListAsync();
+
+            //Build a query to fetch the relevant records from the
+            //'models' table and build 'ModelSpecification' with the data.
+            var modelsToReturn = _context.Models
+                .Where(m => m.MakeID == makeId)
+                .Select(m => new ModelSpecification
+                {
+                    ID = m.ID,
+                    Name = m.Name,
+                    Styles = m.ModelStyles.Select(ms => new ModelSpecificationStyle
+                    {
+                        BodyType = ms.BodyType.Name,
+                        Size = ms.Size.Name,
+                        Years = ms.ModelStyleYears.Select(msy => msy.Year).ToArray()
+                    }).ToArray()
+                });
+            return await modelsToReturn.ToListAsync();
         }
 
         // GET: api/Models/5
