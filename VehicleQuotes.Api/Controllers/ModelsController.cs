@@ -47,69 +47,134 @@ namespace VehicleQuotes.Api.Controllers
 
         // GET: api/Models/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Model>> GetModel([FromRoute]int makeId, int id)
+        public async Task<ActionResult<ModelSpecification>> GetModel([FromRoute]int makeId, int id)
         {
-            var model = await _context.Models.FirstOrDefaultAsync(m => m.MakeID == makeId && m.ID == id);
+            var model = await _context.Models
+                .Include(m => m.ModelStyles).ThenInclude(ms => ms.BodyType)
+                .Include(m => m.ModelStyles).ThenInclude(ms => ms.Size)
+                .Include(m => m.ModelStyles).ThenInclude(ms => ms.ModelStyleYears)
+                .FirstOrDefaultAsync(m => m.MakeID == makeId && m.ID == id);
 
             if (model == null)
             {
                 return NotFound();
             }
 
-            return model;
+            return new ModelSpecification()
+            {
+                ID = model.ID,
+                Name = model.Name,
+                Styles = model.ModelStyles.Select(ms => new ModelSpecificationStyle
+                {
+                    BodyType = ms.BodyType.Name,
+                    Size = ms.Size.Name,
+                    Years = ms.ModelStyleYears.Select(msy => msy.Year).ToArray()
+                }).ToArray()
+            } ;
         }
 
         // PUT: api/Models/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutModel(int id, Model model)
+        public async Task<IActionResult> PutModel([FromRoute] int makeId, int id, ModelSpecification model)
         {
-            if (id != model.ID)
-            {
-                return BadRequest();
-            }
+            if (id != model.ID) return BadRequest();
+            
+            
+            // Get the 'models' record that we want to update. Include any related
+            // data that we want to update as well.
+            var modelToUpdate = await _context.Models
+                .Include(m => m.ModelStyles)
+                .FirstOrDefaultAsync(m => m.MakeID == makeId && m.ID == id);
 
             _context.Entry(model).State = EntityState.Modified;
+
+            if (modelToUpdate == null) return NotFound();
+            //Update the record with what came in the request payload.
+            modelToUpdate.Name = model.Name;
+            
+            //Build EF Core entities based on the incoming Resource Model object.
+            modelToUpdate.ModelStyles = model.Styles.Select(style => new ModelStyle
+            {
+                BodyType = _context.BodyTypes.Single(bodyType => bodyType.Name == style.BodyType),
+                Size = _context.Sizes.Single(size => size.Name == style.Size),
+                ModelStyleYears = style.Years.Select(year => new ModelStyleYear
+                {
+                    Year = year
+                }).ToList()
+            }).ToList();
 
             try
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateException)
             {
-                if (!ModelExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                // If there is an error updating, respond accordingly.
+                return Conflict();
             }
-
+            
+            // Finally, return a 204 if everything went well.
             return NoContent();
         }
 
         // POST: api/Models
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Model>> PostModel(Model model)
+        public async Task<ActionResult<ModelSpecification>> PostModel([FromRoute]int makeId, ModelSpecification model)
         {
-            _context.Models.Add(model);
-            await _context.SaveChangesAsync();
+            var make = await _context.Makes.FindAsync(makeId);
 
-            return CreatedAtAction("GetModel", new { id = model.ID }, model);
+            if (make == null) return NotFound();
+
+            var modelToCreate = new Model
+            {
+                Make = make,
+                Name = model.Name,
+                ModelStyles = model.Styles.Select(style => new ModelStyle
+                {
+                    //Notice how we search both body type and size by their name field.
+                    // We can do that because their names are unique.
+                    BodyType = _context.BodyTypes.Single(bodyType => bodyType.Name == style.BodyType),
+                    Size = _context.Sizes.Single(size => size.Name == style.Size),
+                    ModelStyleYears = style.Years.Select(year => new ModelStyleYear
+                    {
+                        Year = year
+                    }).ToArray()
+                }).ToArray()
+            };
+
+            _context.Add(modelToCreate);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                return Conflict();
+            }
+
+            model.ID = modelToCreate.ID;
+            
+            return CreatedAtAction(
+                nameof(GetModel), 
+                new { makeId = makeId, id = model.ID }, 
+                model
+                );
         }
 
         // DELETE: api/Models/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteModel(int id)
+        //Expect 'makeId' and 'id' from the URL.
+        public async Task<IActionResult> DeleteModel([FromRoute]int makeId, int id)
         {
-            var model = await _context.Models.FindAsync(id);
-            if (model == null)
-            {
-                return NotFound();
-            }
+            // Try to find the record identified by the ids from the URL.
+            var model = await _context.Models
+                .FirstOrDefaultAsync(m => m.MakeID == makeId && m.ID == id);
+            
+            //Respond with a 404 if we can't find it.
+            if (model == null) return NotFound();
+            
 
             _context.Models.Remove(model);
             await _context.SaveChangesAsync();
