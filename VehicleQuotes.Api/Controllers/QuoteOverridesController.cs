@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VehicleQuotes.Api.Data;
+using VehicleQuotes.Api.Models;
 using VehicleQuotes.Api.ResourceModels;
 
 namespace VehicleQuotes.Api.Controllers;
@@ -94,7 +95,58 @@ public class QuoteOverridesController: ControllerBase
         return NoContent();
     }
     
-    // POST: api/QuoteOverrider
+    // POST: api/QuoteOverrides
+    [HttpPost]
+    public async Task<ActionResult<QuoteOverrideSpecification>> PostQuoteOverride(QuoteOverrideSpecification quoteOverride)
+    {
+        var modelStyleYearToOverride = _context.ModelStyleYears.FirstOrDefault(
+            msy =>
+                msy.Year == quoteOverride.Year &&
+                msy.ModelStyle.Model.Make.Name == quoteOverride.Make &&
+                msy.ModelStyle.Model.Name == quoteOverride.Model &&
+                msy.ModelStyle.BodyType.Name == quoteOverride.BodyType &&
+                msy.ModelStyle.Size.Name == quoteOverride.Size
+        );
+        if (modelStyleYearToOverride == null)
+        {
+            return UnprocessableEntity("The specified vehicle model to override is not registered.");
+        }
+
+        var quoteOverrideToCreate = new QuoteOverride
+        {
+            Price = quoteOverride.Price,
+            ModelStyleYear = modelStyleYearToOverride
+        };
+        _context.QuoteOverrides.Add(quoteOverrideToCreate);
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            return Conflict();
+        }
+
+        quoteOverride.ID = quoteOverrideToCreate.ID;
+        
+        return CreatedAtAction(
+            nameof(GetQuoteOverride),
+            new{id = quoteOverride.ID},
+            quoteOverride
+            );
+    }
+    
+    // DELETE: api/QuoteOverrides/5
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteQuoteOverride(int id)
+    {
+        var quoteOverride = await _context.QuoteOverrides.FirstOrDefaultAsync(qo => qo.ID == id);
+        if (quoteOverride == null) return NotFound();
+        
+        _context.QuoteOverrides.Remove(quoteOverride);
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
     
     
 }
