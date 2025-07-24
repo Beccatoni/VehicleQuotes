@@ -11,8 +11,8 @@ using VehicleQuotes.Api.Data;
 namespace VehicleQuotes.Api.Migrations
 {
     [DbContext(typeof(VehicleQuotesContext))]
-    [Migration("20250724074032_AddQuoteRulesAndOverridesTables")]
-    partial class AddQuoteRulesAndOverridesTables
+    [Migration("20250724131103_AddQuoteRulesTable")]
+    partial class AddQuoteRulesTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -194,6 +194,74 @@ namespace VehicleQuotes.Api.Migrations
                     b.ToTable("model_style_years", (string)null);
                 });
 
+            modelBuilder.Entity("VehicleQuotes.Api.Models.QuoteOverride", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ID"));
+
+                    b.Property<string>("ModelStyleYearID")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("model_style_year_id");
+
+                    b.Property<int>("ModelStyleYearID1")
+                        .HasColumnType("integer")
+                        .HasColumnName("model_style_year_id1");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric")
+                        .HasColumnName("price");
+
+                    b.HasKey("ID")
+                        .HasName("pk_quote_overrides");
+
+                    b.HasIndex("ModelStyleYearID")
+                        .IsUnique()
+                        .HasDatabaseName("ix_quote_overrides_model_style_year_id");
+
+                    b.HasIndex("ModelStyleYearID1")
+                        .HasDatabaseName("ix_quote_overrides_model_style_year_id1");
+
+                    b.ToTable("quote_overrides", (string)null);
+                });
+
+            modelBuilder.Entity("VehicleQuotes.Api.Models.QuoteRule", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ID"));
+
+                    b.Property<string>("FeatureType")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("feature_type");
+
+                    b.Property<string>("FeatureValue")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("feature_value");
+
+                    b.Property<decimal>("PriceModifier")
+                        .HasColumnType("numeric")
+                        .HasColumnName("price_modifier");
+
+                    b.HasKey("ID")
+                        .HasName("pk_quote_rules");
+
+                    b.HasIndex("FeatureType", "FeatureValue")
+                        .IsUnique()
+                        .HasDatabaseName("ix_quote_rules_feature_type_feature_value");
+
+                    b.ToTable("quote_rules", (string)null);
+                });
+
             modelBuilder.Entity("VehicleQuotes.Api.Models.Size", b =>
                 {
                     b.Property<int>("ID")
@@ -270,6 +338,18 @@ namespace VehicleQuotes.Api.Migrations
                         .HasConstraintName("fk_model_style_years_model_styles_model_style_id1");
 
                     b.Navigation("ModelStyle");
+                });
+
+            modelBuilder.Entity("VehicleQuotes.Api.Models.QuoteOverride", b =>
+                {
+                    b.HasOne("VehicleQuotes.Api.Models.ModelStyleYear", "ModelStyleYear")
+                        .WithMany()
+                        .HasForeignKey("ModelStyleYearID1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_quote_overrides_model_style_years_model_style_year_id1");
+
+                    b.Navigation("ModelStyleYear");
                 });
 
             modelBuilder.Entity("VehicleQuotes.Api.Models.Model", b =>

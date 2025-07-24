@@ -12,5 +12,7 @@ public class VehicleQuotesContext : DbContext
     public DbSet<BodyType> BodyTypes { get; set; }
     public DbSet<Model> Models { get; set; }
     public DbSet<ModelStyle> ModelStyles { get; set; }
-    public DbSet<ModelStyleYear> ModelStyleYears { get; set; } 
+    public DbSet<ModelStyleYear> ModelStyleYears { get; set; }
+    public DbSet<QuoteRule> QuoteRules { get; set; }
+    public DbSet<QuoteOverride> QuoteOverrides { get; set; }
 }
