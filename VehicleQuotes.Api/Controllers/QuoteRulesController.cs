@@ -87,6 +87,7 @@ public class QuoteRulesController: ControllerBase
     }
     
     // DELETE: api/QuoteRules/5
+    [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteQuoteRule(int id)
     {
         var quoteRule = await _context.QuoteRules.FindAsync(id);
