@@ -118,8 +118,17 @@ namespace VehicleQuotes.Api.Controllers
             return NoContent();
         }
 
+        
         // POST: api/Models
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        /// <summary>
+        /// Creates a new vehicle model for the given make.
+        /// </summary>
+        /// <param name="makeId">The ID of the vehicle make to add the model to.</param>
+        /// <param name="model">The data to create the new model with.</param>
+        /// <response code="201">When the request is valid.</response>
+        /// <response code="404">When the specified vehicle make does not exist.</response>
+        /// <response code="409">When there's already another model in the same make with the same name.</response>
         [HttpPost]
         public async Task<ActionResult<ModelSpecification>> PostModel([FromRoute]int makeId, ModelSpecification model)
         {

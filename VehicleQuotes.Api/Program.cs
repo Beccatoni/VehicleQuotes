@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using VehicleQuotes.Api.Data;
+using System.IO;
+using System.Reflection;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +23,15 @@ builder.Services.AddDbContext<VehicleQuotesContext>(options =>
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+    {
+        c.SwaggerDoc("v1", new OpenApiInfo { Title = "VehicleQuotes", Version = "v1" });
+        c.IncludeXmlComments(
+            Path.Combine(
+                AppContext.BaseDirectory, 
+                $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
+    }
+);
 
 var app = builder.Build();
 

@@ -1,19 +1,22 @@
 using Microsoft.EntityFrameworkCore;
 using VehicleQuotes.Api.Data;
 using VehicleQuotes.Api.Models;
+using VehicleQuotes.Api.ResourceModels;
 
 namespace VehicleQuotes.Api.Services;
 
 public class QuoteService
 {
     private readonly VehicleQuotesContext _context;
+    private readonly IConfiguration _configuration;
     
     // This constructor defines a dependecy on VehicleQuotesContext, similar to most of our controllers.
     // Via the built-in dependency injection features, the framework makes sure to provide
     // creating new instances of this class.
-    public QuoteService(VehicleQuotesContext context)
+    public QuoteService(VehicleQuotesContext context, IConfiguration configuration)
     {
         _context = context;
+        _configuration = configuration;
     }
 
     public async Task<List<SubmittedQuoteRequest>> GetAllQuotes()
@@ -58,6 +61,7 @@ public class QuoteService
         var requestedModelStyleYear = await this.FindModelStyleYear(request);
         QuoteOverride quoteOverride = null;
 
+        
         if (requestedModelStyleYear != null)
         {
 
@@ -71,12 +75,17 @@ public class QuoteService
 
         if (quoteOverride == null)
         {
-            response.OfferedQuote = await this.CalculateQuote(request);
+            response.OfferedQuote = await this.CalculateOfferedQuote(request);
         }
 
         if (requestedModelStyleYear == null)
         {
             response.Message = "Offer subject to change upon vehicle inspection.";
+        }
+        
+        if (response.OfferedQuote <= 0)
+        {
+            response.OfferedQuote = _configuration.GetValue<int>("DefaultOffer", 0);
         }
 
         quoteToStore.OfferedQuote = response.OfferedQuote;
@@ -86,7 +95,7 @@ public class QuoteService
         await _context.SaveChangesAsync();
 
         response.ID = quoteToStore.ID;
-        response.CreateAt = quoteToStore.CreatedAt;
+        response.CreatedAt = quoteToStore.CreatedAt;
         return response;
     }
     
@@ -147,15 +156,14 @@ public class QuoteService
         };
     }
 
-    private async Task<QuoteOverride> FindModelStyleYear(QuoteRequest request)
+    private async Task<ModelStyleYear> FindModelStyleYear(QuoteRequest request)
     {
         return await _context.ModelStyleYears.FirstOrDefaultAsync(msy =>
             msy.Year == request.Year &&
             msy.ModelStyle.Model.Make.Name == request.Make &&
             msy.ModelStyle.Model.Name == request.Model &&
             msy.ModelStyle.BodyType.Name == request.BodyType &&
-            msy.ModelStyle.Size.Name == request.Size
-        );
+            msy.ModelStyle.Size.Name == request.Size);
     }
     
     // Tries to find an override for the vehicle for which the quote is currently being requested.
@@ -172,19 +180,19 @@ public class QuoteService
     {
         var rules = await _context.QuoteRules.ToListAsync();
 
-        // Given a vehicle feature type, find a rule that applies to that feature type and has the value that
+        // Given a vehicle feature type, find a rule that applies to that feature type
         // matches the condition of the incoming vehicle being quoted.
         Func<string, QuoteRule> theMatchingRule = featureType =>
             rules.FirstOrDefault(r =>
                 r.FeatureType == featureType &&
                 r.FeatureValue == request[featureType]
-            );
-
-        // For each vehicle feature that we care about, sum up the the monetary values of all the rules that match
+                );
+        
+        // For each vehicle feature that we care about, sum up the monetary valueof all the rules that match
         // the given vehicle condition.
-        return QuoteRule.FeatureTypes.All
+        return (int)QuoteRule.FeatureTypes.All
             .Select(theMatchingRule)
-            .Where(r => r != null)
+            // .Where(r => r != null)
             .Sum(r => r.PriceModifier);
     }
     

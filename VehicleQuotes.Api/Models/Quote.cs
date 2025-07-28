@@ -28,7 +28,7 @@ public class Quote
     public bool HasTransmission { get; set; }
     public bool HasCompleteInterior { get; set; }
     
-    public int OfferedQuote { get; set; }
+    public decimal OfferedQuote { get; set; }
     public string Message { get; set; }
     public DateTime CreatedAt { get; set; }
     
