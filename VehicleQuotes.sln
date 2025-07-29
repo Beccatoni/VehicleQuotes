@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VehicleQuotes.Api", "VehicleQuotes.Api\VehicleQuotes.Api.csproj", "{4A7A97E0-3A58-44CB-9BF1-10A130AAFDFA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VehicleQuotes.Tests", "VehicleQuotes.Tests\VehicleQuotes.Tests.csproj", "{B50A9BEE-F463-4043-94FC-89A66F374A00}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,18 @@ Global
 		{4A7A97E0-3A58-44CB-9BF1-10A130AAFDFA}.Release|x64.Build.0 = Release|Any CPU
 		{4A7A97E0-3A58-44CB-9BF1-10A130AAFDFA}.Release|x86.ActiveCfg = Release|Any CPU
 		{4A7A97E0-3A58-44CB-9BF1-10A130AAFDFA}.Release|x86.Build.0 = Release|Any CPU
+		{B50A9BEE-F463-4043-94FC-89A66F374A00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B50A9BEE-F463-4043-94FC-89A66F374A00}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B50A9BEE-F463-4043-94FC-89A66F374A00}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B50A9BEE-F463-4043-94FC-89A66F374A00}.Debug|x64.Build.0 = Debug|Any CPU
+		{B50A9BEE-F463-4043-94FC-89A66F374A00}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B50A9BEE-F463-4043-94FC-89A66F374A00}.Debug|x86.Build.0 = Debug|Any CPU
+		{B50A9BEE-F463-4043-94FC-89A66F374A00}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B50A9BEE-F463-4043-94FC-89A66F374A00}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B50A9BEE-F463-4043-94FC-89A66F374A00}.Release|x64.ActiveCfg = Release|Any CPU
+		{B50A9BEE-F463-4043-94FC-89A66F374A00}.Release|x64.Build.0 = Release|Any CPU
+		{B50A9BEE-F463-4043-94FC-89A66F374A00}.Release|x86.ActiveCfg = Release|Any CPU
+		{B50A9BEE-F463-4043-94FC-89A66F374A00}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
