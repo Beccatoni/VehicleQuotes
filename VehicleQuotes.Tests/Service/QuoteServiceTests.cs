@@ -1,37 +1,32 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using VehicleQuotes.Api.Data;
 using VehicleQuotes.Api.Models;
 using VehicleQuotes.Api.Services;
+using VehicleQuotes.Tests.Fixtures;
 using Xunit;
 
 namespace VehicleQuotes.Tests.Service;
 
-public class QuoteServiceTests
+public class QuoteServiceTests: IClassFixture<DatabaseFixture>, IDisposable
 {
-    private VehicleQuotesContext CreateDbContext()
-    {
-        var host = Host.CreateApplicationBuilder().Build();
-        var config = host.Services.GetRequiredService<IConfiguration>();
-        var options = new DbContextOptionsBuilder<VehicleQuotesContext>()
-            .UseNpgsql("Host=localhost;Port=5433;Database=vehicle_quote;Username=vehicle_quote;Password=password")
-            .UseNpgsql(config.GetConnectionString("VehicleQuotesContext"))
-            .UseSnakeCaseNamingConvention()
-            .Options;
+    private VehicleQuotesContext dbContext;
 
-        var context = new VehicleQuotesContext(options);
-        context.Database.EnsureDeleted();
-        context.Database.EnsureCreated();
-        return context;
+    public QuoteServiceTests(DatabaseFixture fixture)
+    {
+        dbContext = fixture.Dbcontext;
+
+        dbContext.Database.BeginTransaction();
     }
-// to run detailed tests:  ______dotnet test --logger "console;verbosity=detailed"______
+
+    public void Dispose()
+    {
+        dbContext.Database.RollbackTransaction();
+    }
+
+    // to run detailed tests:  ______dotnet test --logger "console;verbosity=detailed"______
     [Fact]
     public async void GetAllQuotesReturnsAsyncEmptywhenThereIsNoDataStored()
     {
         // Given
-        var dbContext = CreateDbContext();
         var service = new QuoteService(dbContext, null);
         // When
         var result = await service.GetAllQuotes();
@@ -43,8 +38,6 @@ public class QuoteServiceTests
     public async void GetAllQuotesReturnsAsyncTheStoredData()
     {
         // Given
-        var dbContext = CreateDbContext();
-
         var quote = new Quote
         {
            OfferedQuote = 100,
