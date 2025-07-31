@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using VehicleQuotes.Api.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace VehicleQuotes.Api.Data;
 
-public class VehicleQuotesContext : DbContext
+public class VehicleQuotesContext : IdentityUserContext<IdentityUser>
 {
     public VehicleQuotesContext(DbContextOptions<VehicleQuotesContext> options): base(options){}
     
@@ -17,9 +19,11 @@ public class VehicleQuotesContext : DbContext
     public DbSet<QuoteOverride> QuoteOverrides { get; set; }
     
     public DbSet<Quote> Quotes { get; set; }
+    
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
         // Our vehicle size and body type data isn’t meant to really
         // change much. In fact, we could even preload that data when
         // our application starts.
