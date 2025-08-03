@@ -7,26 +7,28 @@ namespace VehicleQuotes.Api.Data;
 
 public class VehicleQuotesContext : IdentityUserContext<IdentityUser>
 {
-    public VehicleQuotesContext(DbContextOptions<VehicleQuotesContext> options): base(options){}
-    
+    public VehicleQuotesContext (DbContextOptions<VehicleQuotesContext> options)
+        : base(options)
+    {
+    }
+
     public DbSet<Make> Makes { get; set; }
     public DbSet<Size> Sizes { get; set; }
     public DbSet<BodyType> BodyTypes { get; set; }
+
     public DbSet<Model> Models { get; set; }
     public DbSet<ModelStyle> ModelStyles { get; set; }
     public DbSet<ModelStyleYear> ModelStyleYears { get; set; }
+
     public DbSet<QuoteRule> QuoteRules { get; set; }
     public DbSet<QuoteOverride> QuoteOverrides { get; set; }
-    
+
     public DbSet<Quote> Quotes { get; set; }
-    
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        // Our vehicle size and body type data isn’t meant to really
-        // change much. In fact, we could even preload that data when
-        // our application starts.
+
         modelBuilder.Entity<Size>().HasData(
             new Size { ID = 1, Name = "Subcompact" },
             new Size { ID = 2, Name = "Compact" },
