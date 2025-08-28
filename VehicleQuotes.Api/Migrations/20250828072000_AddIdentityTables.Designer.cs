@@ -12,7 +12,7 @@ using VehicleQuotes.Api.Data;
 namespace VehicleQuotes.Api.Migrations
 {
     [DbContext(typeof(VehicleQuotesContext))]
-    [Migration("20250731173031_AddIdentityTables")]
+    [Migration("20250828072000_AddIdentityTables")]
     partial class AddIdentityTables
     {
         /// <inheritdoc />
