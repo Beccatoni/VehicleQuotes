@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
+using VehicleQuotes.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,6 +47,8 @@ builder.Services
     options.Password.RequireLowercase = false;
 })
     .AddEntityFrameworkStores<VehicleQuotesContext>();
+
+builder.Services.AddScoped<JwtService>();
 
 
 var app = builder.Build();

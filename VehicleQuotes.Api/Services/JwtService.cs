@@ -16,7 +16,7 @@ public class JwtService(IConfiguration configuration)
     {
         var expiration = DateTime.UtcNow.AddMinutes(EXPIRATION_MINUTES);
         
-        var token = CreateJwtToken(CreateClaims(user), CreateSigningCredentials, expiration);
+        var token = CreateJwtToken(CreateClaims(user), CreateSigningCredentials(), expiration);
         var tokenHandler = new JwtSecurityTokenHandler();
         return new AuthenticationResponse
         {
@@ -48,7 +48,7 @@ public class JwtService(IConfiguration configuration)
         };
     }
 
-    private SigningCredentials CreateSigningCredentials() => new SigningCredentials(
+    private SigningCredentials CreateSigningCredentials() => new(
         new SymmetricSecurityKey(
         Encoding.UTF8.GetBytes(configuration["Jwt:Key"])),
         SecurityAlgorithms.HmacSha256
